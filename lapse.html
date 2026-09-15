@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>maquiavel — lapse</title>
+<style>
+:root { color-scheme: dark; --bg: #0a0a0a; --fg: #e8e8e8; --mut: #6b6b6b; --line: #1c1c1c; --acc: #d4a017; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background: var(--bg);
+    color: var(--fg);
+    font: 400 14px/1.6 -apple-system, "Segoe UI", Inter, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+.wrap { width: 100%; max-width: 640px; padding: 48px 28px 40px; }
+.brand {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+.brand b { font-size: 15px; letter-spacing: .28em; font-weight: 600; }
+.brand span { font-size: 11px; color: var(--mut); letter-spacing: .12em; }
+.tag { font-size: 11px; color: var(--mut); margin-bottom: 28px; letter-spacing: .04em; }
+#state {
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 20px;
+    min-height: 28px;
+    letter-spacing: -.01em;
+}
+#out {
+    white-space: pre-wrap;
+    font: 11px/1.8 ui-monospace, "SF Mono", Consolas, monospace;
+    color: var(--mut);
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+    max-height: 68vh;
+    overflow-y: auto;
+    word-break: break-all;
+}
+#out .ok { color: var(--fg); }
+#out .warn { color: var(--acc); }
+#out .err { color: #f66; }
+.foot { margin-top: 28px; font-size: 10px; color: #3d3d3d; letter-spacing: .08em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="brand"><b>MAQUIAVEL</b><span>lapse</span></div>
+    <div class="tag">não feche nem atualize durante a execução</div>
+
+    <div id="state">carregando…</div>
+    <div id="out"></div>
+
+    <div class="foot">maquiavel</div>
+</div>
+
+<script type="module" src="chain_lapse.mjs"></script>
+</body>
+</html>

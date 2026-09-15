@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>maquiavel</title>
+<style>
+:root { color-scheme: dark; --bg: #0a0a0a; --fg: #e8e8e8; --mut: #6b6b6b; --line: #1c1c1c; --acc: #d4a017; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background: var(--bg);
+    color: var(--fg);
+    font: 400 14px/1.6 -apple-system, "Segoe UI", Inter, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+.wrap { width: 100%; max-width: 560px; padding: 56px 28px 40px; }
+.brand {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+.brand b { font-size: 15px; letter-spacing: .28em; font-weight: 600; }
+.brand span { font-size: 11px; color: var(--mut); letter-spacing: .12em; }
+.tag { font-size: 11px; color: var(--mut); margin-bottom: 32px; letter-spacing: .04em; }
+.item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+}
+.item:first-of-type { border-top: 1px solid var(--line); }
+.k { color: var(--mut); text-transform: uppercase; letter-spacing: .14em; font-size: 10px; }
+.v { color: var(--fg); text-align: right; }
+.v.ok { color: var(--acc); }
+.v.err { color: #f66; }
+#choice { display: none; margin-top: 28px; }
+#choice a {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--fg);
+    text-decoration: none;
+    font-size: 13px;
+}
+#choice a:first-of-type { border-top: 1px solid var(--line); }
+#choice a small { color: var(--mut); font-size: 10px; letter-spacing: .1em; }
+#choice a.rec small { color: var(--acc); }
+#v-note { font-size: 11px; color: var(--mut); margin-top: 24px; line-height: 1.8; }
+.foot { margin-top: 40px; font-size: 10px; color: #3d3d3d; letter-spacing: .08em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="brand"><b>MAQUIAVEL</b><span id="v-ver">ps4</span></div>
+    <div class="tag">escolha o método</div>
+
+    <div class="item"><span class="k">firmware</span><span class="v" id="v-fw">detectando…</span></div>
+    <div class="item"><span class="k">offsets</span><span class="v" id="v-off">—</span></div>
+    <div class="item"><span class="k">estado</span><span class="v" id="v-st">—</span></div>
+    <div class="item"><span class="k">cache</span><span class="v" id="v-cache">…</span></div>
+
+    <div id="choice">
+        <a id="c-poops" href="poops.html"><span>poops</span><small id="c-poops-tag">uaf ipv6</small></a>
+        <a id="c-lapse" href="lapse.html"><span>lapse</span><small id="c-lapse-tag">aio double-free</small></a>
+    </div>
+
+    <div id="v-note"></div>
+</div>
+
+<script type="module">
+import { offsetsFor, PS4 } from "./ps4_offsets.mjs";
+
+const $ = id => document.getElementById(id);
+function set(id, txt, cls) {
+    const e = $(id); if (!e) return;
+    e.textContent = txt;
+    e.className = "v" + (cls ? " " + cls : "");
+}
+
+const params = new URLSearchParams(location.search);
+const qfw = (params.get("fw") || "").trim();
+const manual = /^\d+\.\d+$/.test(qfw);
+const ua = manual
+    ? "Mozilla/5.0 (PlayStation 4 " + qfw + ") AppleWebKit/605.1.15"
+    : navigator.userAgent;
+const { key, off } = offsetsFor(ua);
+if (!key || !off) {
+    set("v-fw", key || "desconhecido", "err");
+    set("v-off", "sem offsets", "err");
+    set("v-st", "firmware sem suporte", "err");
+    $("v-note").textContent = "suportados: " + Object.keys(PS4).join(" ")
+        + " -- ?fw=X.YY pre-visualiza";
+} else {
+    $("v-ver").textContent = key;
+    set("v-fw", key + (manual ? " (manual)" : ""), "ok");
+    set("v-off", (off.fw_status || "").split(" ")[0].replace("state=", ""), "ok");
+    set("v-st", "escolha abaixo", "ok");
+    const m = (off.fw_status || "").match(/(?:^|\s)bug=(lapse|poops)(?:\s|$)/);
+    const n = parseInt(key.split(".")[0], 10) * 100 + parseInt(key.split(".")[1], 10);
+    const rec = m ? m[1] : (n <= 1202 ? "lapse" : "poops");
+    const tag = $(rec === "lapse" ? "c-lapse-tag" : "c-poops-tag");
+    if (tag) tag.textContent = "recomendado";
+    $(rec === "lapse" ? "c-lapse" : "c-poops").classList.add("rec");
+    $("choice").style.display = "block";
+    $("v-note").textContent = key + " -> poops ou lapse";
+}
+</script>
+
+<script>
+(function () {
+    var e = document.getElementById("v-cache");
+    function put(txt, cls) {
+        if (!e) return;
+        e.textContent = txt;
+        e.className = "v" + (cls ? " " + cls : "");
+    }
+    if (!("serviceWorker" in navigator)) { put("sem suporte", "err"); return; }
+    put("sincronizando…");
+    navigator.serviceWorker.register("sw.js").then(function (r) {
+        function done() { put("offline pronto", "ok"); }
+        var sw = r.installing || r.waiting || r.active;
+        if (r.active) { done(); }
+        else if (sw) { sw.addEventListener("statechange", function (ev) { if (ev.target.state === "activated") done(); }); }
+        else { done(); }
+    }).catch(function () { put("indisponível", "err"); });
+})();
+</script>
+</body>
+</html>
